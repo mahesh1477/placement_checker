@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email OTP Login | Appwrite</title>
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 320px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #667eea;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #556cd6;
+    }
+    .hidden {
+      display: none;
+    }
+    .msg {
+      margin-top: 15px;
+      font-size: 14px;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Email OTP Login</h2>
+
+   
+    <div id="emailBox">
+      <input type="email" id="email" placeholder="Enter your email" required />
+      <button onclick="sendOTP()">Send OTP</button>
+    </div>
+
+    
+    <div id="otpBox" class="hidden">
+      <input type="text" id="otp" placeholder="Enter OTP" />
+      <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+
+    <div class="msg" id="message"></div>
+  </div>
+
+  <script>
+    
+    const client = new Appwrite.Client();
+    const account = new Appwrite.Account(client);
+
+    client
+      .setEndpoint('https://nyc.cloud.appwrite.io/v1') // Appwrite endpoint
+      .setProject('6957659200075801b331'); // 🔴 Replace with your Project ID
+
+    let userId = null;
+
+    async function sendOTP() {
+      const email = document.getElementById('email').value;
+      if (!email) {
+        alert('Please enter email');
+        return;
+      }
+
+      try { 
+        userId = Appwrite.ID.unique();
+        await account.createEmailToken(userId, email);
+
+        document.getElementById('emailBox').classList.add('hidden');
+        document.getElementById('otpBox').classList.remove('hidden');
+        document.getElementById('message').innerText = 'OTP sent to your email';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function verifyOTP() {
+      const otp = document.getElementById('otp').value;
+
+      try {
+        await account.createSession(userId, otp);
+        window.location.href="placement.html";
+
+      } catch (err) {
+        alert('Invalid OTP');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Placement Eligibility</title>
+
+  <!-- ================= CSS ================= -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      margin: 0;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 25px;
+      width: 360px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1f2933;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4f46e5;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #4338ca;
+    }
+
+    #result {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>Placement Eligibility</h2>
+
+    <input id="tenth" placeholder="10th %" type="number" />
+    <input id="twelfth" placeholder="12th %" type="number" />
+    <input id="sem1" placeholder="Sem 1 %" type="number" />
+    <input id="sem2" placeholder="Sem 2 %" type="number" />
+    <input id="sem3" placeholder="Sem 3 %" type="number" />
+    <input id="sem4" placeholder="Sem 4 %" type="number" />
+    <input id="sem5" placeholder="Sem 5 %" type="number" />
+
+    <button onclick="checkEligibility()">Check Eligibility</button>
+
+    <h3 id="result"></h3>
+  </div>
+
+  <!-- ================= JavaScript ================= -->
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+<script>
+  const client = new Appwrite.Client();
+  const account = new Appwrite.Account(client);
+  const databases = new Appwrite.Databases(client);
+
+  client
+    .setEndpoint("https://nyc.cloud.appwrite.io/v1")
+    .setProject("6957659200075801b331");
+
+  window.checkEligibility = async function () {
+    const marks = {
+      tenth: Number(tenth.value),
+      twelfth: Number(twelfth.value),
+      sem1: Number(sem1.value),
+      sem2: Number(sem2.value),
+      sem3: Number(sem3.value),
+      sem4: Number(sem4.value),
+      sem5: Number(sem5.value),
+    };
+
+    const total =
+      marks.tenth +
+      marks.twelfth +
+      marks.sem1 +
+      marks.sem2 +
+      marks.sem3 +
+      marks.sem4 +
+      marks.sem5;
+
+    const average = total / 7;
+    const eligible = average >= 60;
+
+    document.getElementById("result").innerText =
+      eligible
+        ? `✅ Eligible (Average: ${average.toFixed(2)}%)`
+        : `❌ Not Eligible (Average: ${average.toFixed(2)}%)`;
+
+    try {
+      const user = await account.get();
+
+      await databases.createDocument(
+        "695765bf0039c7f8eeb8", // Database ID
+        "students",            // Collection ID
+        "unique()",
+        {
+          email: user.email,
+          ...marks,
+          average,
+          eligible
+        }
+      );
+
+      alert("Data saved successfully ✅");
+    } catch (err) {
+      console.error(err);
+      alert("Login required or permission issue");
+    }
+  };
+</script>
